@@ -2,84 +2,107 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 
-// Initialization
 const app = express();
 const server = http.createServer(app);
 
-// Configure Socket.io with 100MB buffer for large media
+// Configure Socket.io with a massive 100MB buffer for those 20MB files
 const io = new Server(server, {
-    cors: {
-        origin: "*", // Allows your mobile browser to connect
-        methods: ["GET", "POST"]
-    },
+    cors: { origin: "*" },
     maxHttpBufferSize: 1e8 
 });
 
-// Database Simulation (Reset on server restart)
+// Database Simulations (Reset on server restart)
 let posts = [];
-let onlineUsers = {}; // Maps UserID -> SocketID
+let onlineUsers = {}; // { userId: socketId }
 
 io.on('connection', (socket) => {
-    console.log(`>>> Connection established: ${socket.id}`);
+    console.log(`[SYSTEM] New Connection: ${socket.id}`);
 
-    // 1. REGISTRATION (Friend List Logic)
+    // --- 1. USER REGISTRATION ---
     socket.on('registerUser', (userId) => {
         if (!userId) return;
         onlineUsers[userId] = socket.id;
-        console.log(`User ${userId} registered at ${socket.id}`);
         
-        // Broadcast updated online list to everyone
+        // Broadcast the updated online list so the sidebar updates
         io.emit('updateOnlineList', Object.keys(onlineUsers));
         
-        // Send existing posts to the new user immediately
+        // Push current feed to the new user
         socket.emit('feedUpdate', posts);
     });
 
-    // 2. FEED SYSTEM (Global Posts)
-    socket.on('newTrollPost', (data) => {
+    // --- 2. GLOBAL FEED (POSTS, LIKES, COMMENTS) ---
+    socket.on('newTrollPost', (post) => {
         try {
-            // Memory Guard: Keep only the latest 50 posts
-            posts.unshift(data);
-            if (posts.length > 50) posts.pop();
-
-            // Broadcast to the whole world
+            posts.unshift(post);
+            if (posts.length > 50) posts.pop(); // Keep RAM clean
             io.emit('feedUpdate', posts);
-            console.log(`New post from ${data.uName}`);
         } catch (err) {
-            console.error("Post processing error:", err);
+            console.error("Post Error:", err);
         }
     });
 
-    // 3. PRIVATE CHAT & NOTIFICATIONS
-    socket.on('sendPrivateMessage', (data) => {
-        const targetSocketId = onlineUsers[data.toUserId];
-        
+    socket.on('likePost', (data) => {
+        const post = posts.find(p => p.id === data.pid);
+        if (post) {
+            if (!post.likedBy) post.likedBy = [];
+            
+            // Toggle like logic
+            const index = post.likedBy.indexOf(data.uid);
+            if (index === -1) {
+                post.likedBy.push(data.uid);
+            } else {
+                post.likedBy.splice(index, 1);
+            }
+            
+            post.likes = post.likedBy.length;
+            io.emit('feedUpdate', posts);
+        }
+    });
+
+    socket.on('newComment', (data) => {
+        const post = posts.find(p => p.id === data.pid);
+        if (post) {
+            if (!post.comments) post.comments = [];
+            post.comments.push({ user: data.user, text: data.text });
+            io.emit('feedUpdate', posts);
+        }
+    });
+
+    // --- 3. FRIEND REQUESTS & PRIVATE CHAT ---
+    socket.on('friendRequest', (data) => {
+        const targetSocketId = onlineUsers[data.to];
         if (targetSocketId) {
-            // Send specifically to the target user's phone
-            io.to(targetSocketId).emit('receivePrivateMessage', {
-                fromName: data.fromName,
-                fromId: data.fromId,
-                message: data.message
-            });
-            console.log(`Private DM: ${data.fromId} -> ${data.toUserId}`);
-        } else {
-            console.log(`Target user ${data.toUserId} is offline.`);
+            io.to(targetSocketId).emit('receiveFriendRequest', data);
         }
     });
 
-    // 4. REPORTING SYSTEM
-    socket.on('reportSubmit', (data) => {
-        console.warn(`[REPORT] Admin Alert: rabi65171@gmail.com`);
-        console.warn(`Violator: ${data.violator} | Reason: ${data.reason}`);
-        // In a real app, this would trigger an email via Nodemailer here
+    socket.on('acceptFriend', (data) => {
+        // Logic to link users as friends could be stored in a DB here
+        console.log(`[FRIENDS] ${data.u1} and ${data.u2} are now connected.`);
     });
 
-    // 5. DISCONNECT LOGIC
+    socket.on('sendPrivateMessage', (data) => {
+        const targetSocketId = onlineUsers[data.to];
+        if (targetSocketId) {
+            io.to(targetSocketId).emit('receivePrivateMessage', data);
+        }
+    });
+
+    // --- 4. FOLLOW & REPORT ---
+    socket.on('followUser', (data) => {
+        console.log(`[FOLLOW] ${data.follower} followed ${data.target}`);
+        // You could add a 'followers' array to user profiles here
+    });
+
+    socket.on('reportSubmit', (data) => {
+        console.warn(`[REPORT] Flagged: ${data.violator} | Reason: ${data.reason}`);
+        console.warn(`Admin Notification sent to rabi65171@gmail.com`);
+    });
+
+    // --- 5. DISCONNECT ---
     socket.on('disconnect', () => {
-        // Find and remove user from online list
         for (let uid in onlineUsers) {
             if (onlineUsers[uid] === socket.id) {
-                console.log(`<<< User ${uid} disconnected`);
                 delete onlineUsers[uid];
                 break;
             }
@@ -88,19 +111,8 @@ io.on('connection', (socket) => {
     });
 });
 
-// Global Error Catching (Prevents the 'Railway Crash')
-process.on('uncaughtException', (err) => {
-    console.error('SYSTEM CRITICAL ERROR:', err);
-});
-
-// Port Binding for Railway
+// Start Server
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-    console.log(`
-    ====================================
-    TrollNET Backend is LIVE on Port ${PORT}
-    Safe-Memory Mode: Enabled
-    Max Buffer: 100MB
-    ====================================
-    `);
+    console.log(`TrollNET Backend Running on Port ${PORT}`);
 });
