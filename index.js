@@ -1,41 +1,43 @@
 const express = require('express');
-const multer = require('multer');
-const nodemailer = require('nodemailer');
-const { OAuth2Client } = require('google-auth-library');
-const client = new OAuth2Client("778775023056-dnrr0d6ujirr01cs0vclfd6gpgseh7kl.apps.googleusercontent.com");
+const http = require('http');
+const { Server } = require('socket.io');
 
 const app = express();
-// ... (your existing socket.io setup)
-
-// --- UPLOAD CONFIG (20MB LIMIT) ---
-const upload = multer({ 
-    dest: 'uploads/', 
-    limits: { fileSize: 20 * 1024 * 1024 } // 20MB
+const server = http.createServer(app);
+const io = new Server(server, { 
+    cors: { origin: "*" },
+    maxHttpBufferSize: 1e8 // Allows 20MB+ uploads
 });
 
-app.post('/upload', upload.single('media'), (req, res) => {
-    res.json({ url: `/uploads/${req.file.filename}` });
+let posts = []; 
+
+// ALL socket code MUST be inside this block
+io.on('connection', (socket) => {
+    console.log('A user connected:', socket.id);
+    
+    // Send existing posts to the new user
+    socket.emit('feedUpdate', posts);
+
+    // Handle New Posts
+    socket.on('newTrollPost', (data) => {
+        posts.unshift(data);
+        if (posts.length > 50) posts.pop(); 
+        io.emit('feedUpdate', posts);
+    });
+
+    // FIX: Moving the report code INSIDE the connection block
+    socket.on('reportSubmit', (data) => {
+        console.log(`REPORT for rabi65171@gmail.com: ${data.violator}`);
+        // Logic for email/banning goes here
+    });
+
+    socket.on('disconnect', () => {
+        console.log('User disconnected');
+    });
 });
 
-// --- REPORT SYSTEM (NODEMAILER) ---
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: { user: 'YOUR_EMAIL@gmail.com', pass: 'YOUR_APP_PASSWORD' }
-});
-
-socket.on('reportUser', (data) => {
-    const mailOptions = {
-        from: 'TrollNET System',
-        to: 'rabi65171@gmail.com',
-        subject: `REPORT: ${data.targetUser}`,
-        text: `Reason: ${data.reason}\nReported by: ${data.reporter}`
-    };
-    transporter.sendMail(mailOptions);
-});
-
-// --- SEARCH & SUBSCRIBE ---
-let posts = []; // Simple in-memory search
-socket.on('search', (query) => {
-    const results = posts.filter(p => p.text.includes(query));
-    socket.emit('searchResults', results);
+// Start the server
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });
