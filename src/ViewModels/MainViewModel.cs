@@ -1,28 +1,40 @@
+using System;
 using System.Collections.ObjectModel;
-using System.Windows.Input;
+using System.Threading.Tasks;
 using SUSCRAFT.Models;
-using SUSCRAFT.Services;
+using SUSCRAFT.Core;
+using CmlLib.Core.Auth;
 
 namespace SUSCRAFT.ViewModels
 {
     public class MainViewModel
     {
         public ObservableCollection<MinecraftInstance> Instances { get; set; }
-        private InstanceService _instanceService;
+        public MinecraftInstance SelectedInstance { get; set; }
+        private LaunchController _launchController;
 
         public MainViewModel()
         {
-            // Pointing to the local AppData folder we created in Part 0
-            string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SUSCRAFT", "instances");
-            _instanceService = new InstanceService(path);
-            
             Instances = new ObservableCollection<MinecraftInstance>();
+            _launchController = new LaunchController();
+            
+            // Default RAM setting: 2GB
+            Instances.Add(new MinecraftInstance { Name = "Main Survival", Version = "1.20.1" });
         }
 
-        public void AddNewInstance(string name, string version)
+        public async Task LaunchSelected()
         {
-            _instanceService.CreateInstance(name, version);
-            Instances.Add(new MinecraftInstance { Name = name, Version = version });
+            if (SelectedInstance == null) return;
+
+            // Using a dummy session for now - Part 12 handles the real auth
+            var session = MSession.GetOfflineSession("SusPlayer");
+            
+            try {
+                await _launchController.StartGame(session, SelectedInstance.Version, 2048);
+            } catch (Exception ex) {
+                // This is where your "You think I'm stupid" error would appear
+                Console.WriteLine("Error: " + ex.Message);
+            }
         }
     }
 }
