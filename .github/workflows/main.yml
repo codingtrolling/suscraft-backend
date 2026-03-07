@@ -1,0 +1,34 @@
+name: Build and Release SUSCRAFT
+
+on:
+  push:
+    tags:
+      - 'v*' # Trigger only when you push a tag like v1.0
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Restore Dependencies
+      run: dotnet restore src/SUSCRAFT.csproj
+
+    - name: Build App
+      run: dotnet build src/SUSCRAFT.csproj --configuration Release --no-restore
+
+    - name: Publish Executable
+      run: dotnet publish src/SUSCRAFT.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:PublishReadyToRun=true
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: SUSCRAFT-Windows-Build
+        path: src/bin/Release/net8.0-windows/win-x64/publish/
