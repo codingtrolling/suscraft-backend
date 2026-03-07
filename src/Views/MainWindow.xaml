@@ -9,12 +9,14 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <StackPanel Grid.Column="0" Background="#252526" Padding="15">
-            <TextBlock Text="SUSCRAFT" FontSize="24" FontWeight="Bold" Margin="0,0,0,30" Foreground="#FF4500"/>
-            <Button Content="PLAY" Height="40" Background="#FF4500" Foreground="White" FontWeight="Bold" Margin="0,10"/>
-            <Button Content="Add Instance" Margin="0,5" Background="#333" Foreground="White"/>
-            <Button Content="Settings" Margin="0,5" Background="#333" Foreground="White"/>
-        </StackPanel>
+        <Border Grid.Column="0" Background="#252526" Padding="15">
+            <StackPanel>
+                <TextBlock Text="SUSCRAFT" FontSize="24" FontWeight="Bold" Margin="0,0,0,30" Foreground="#FF4500"/>
+                <Button Content="PLAY" Height="40" Background="#FF4500" Foreground="White" FontWeight="Bold" Margin="0,10"/>
+                <Button Content="Add Instance" Margin="0,5" Background="#333" Foreground="White"/>
+                <Button Content="Settings" Margin="0,5" Background="#333" Foreground="White"/>
+            </StackPanel>
+        </Border>
 
         <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
             <ItemsControl ItemsSource="{Binding Instances}">
