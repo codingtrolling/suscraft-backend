@@ -1,2 +1,8 @@
 using System.Windows;
-namespace SUSCRAFT { public partial class App : Application { } }
+
+namespace SUSCRAFT
+{
+    public partial class App : Application
+    {
+    }
+}

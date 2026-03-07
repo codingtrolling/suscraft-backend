@@ -1,0 +1,22 @@
+<Window x:Class="SUSCRAFT.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="SUSCRAFT - Minecraft Launcher" Height="450" Width="800"
+        Background="#1E1E1E" Foreground="White">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200"/> <ColumnDefinition Width="*"/>   </Grid.ColumnDefinitions>
+
+        <StackPanel Grid.Column="0" Background="#252526" Padding="10">
+            <TextBlock Text="SUSCRAFT" FontSize="20" FontWeight="Bold" Margin="0,0,0,20" Foreground="#FF4500"/>
+            <Button Content="Instances" Margin="0,5" Padding="5" Background="Transparent" Foreground="White" BorderThickness="0"/>
+            <Button Content="Settings" Margin="0,5" Padding="5" Background="Transparent" Foreground="White" BorderThickness="0"/>
+            <Button Content="Accounts" Margin="0,5" Padding="5" Background="Transparent" Foreground="White" BorderThickness="0"/>
+        </StackPanel>
+
+        <Grid Grid.Column="1">
+            <TextBlock Text="No Instances Found. Create one to start trolling." 
+                       HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#555"/>
+        </Grid>
+    </Grid>
+</Window>
