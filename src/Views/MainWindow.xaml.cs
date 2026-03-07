@@ -1,4 +1,5 @@
 using System.Windows;
+using SUSCRAFT.ViewModels;
 
 namespace SUSCRAFT.Views
 {
@@ -7,6 +8,7 @@ namespace SUSCRAFT.Views
         public MainWindow()
         {
             InitializeComponent();
+            this.DataContext = new MainViewModel();
         }
     }
 }
