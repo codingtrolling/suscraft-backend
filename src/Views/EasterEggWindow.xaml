@@ -1,0 +1,12 @@
+<Window x:Class="SUSCRAFT.Views.EasterEggWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="TARAN TARAN MODE ACTIVATED" Height="400" Width="400"
+        Background="Black" WindowStyle="None" WindowStartupLocation="CenterScreen">
+    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+        <TextBlock Text="🐈" FontSize="100" HorizontalAlignment="Center"/>
+        <TextBlock Text="TARAN TARAN IS WATCHING" Foreground="Red" FontSize="20" FontWeight="Bold" Margin="0,20"/>
+        <TextBlock Text="Stop trolling and go play Minecraft." Foreground="Gray" HorizontalAlignment="Center"/>
+        <Button Content="Close" Click="Close_Click" Margin="0,20" Background="#333" Foreground="White"/>
+    </StackPanel>
+</Window>
