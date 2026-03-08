@@ -11,40 +11,35 @@
 
         <Border Grid.Column="0" Background="#252526" Padding="15">
             <StackPanel>
-                <TextBlock Text="SUSCRAFT" 
-                           MouseDown="Logo_MouseDown" 
-                           Cursor="Hand"
+                <TextBlock Text="SUSCRAFT" MouseDown="Logo_MouseDown" Cursor="Hand"
                            FontSize="24" FontWeight="Bold" Margin="0,0,0,30" Foreground="#FF4500"/>
                 
-                <Button Content="PLAY" Height="40" 
-                        Background="#FF4500" Foreground="White" 
-                        FontWeight="Bold" Margin="0,10"
-                        Click="PlayButton_Click"/> <Button Content="Add Instance" Margin="0,5" Background="#333" Foreground="White"/>
-                <Button Content="Settings" Margin="0,5" Background="#333" Foreground="White"/>
-            </StackPanel>
+                <Button Content="PLAY" Height="40" Background="#FF4500" Foreground="White" 
+                        FontWeight="Bold" Margin="0,10" Click="PlayButton_Click"/>
+                
+                <Button Content="Add Instance" Margin="0,5" Background="#333" Foreground="White" 
+                        Click="AddInstance_Click"/> <Button Content="Settings" Margin="0,5" Background="#333" Foreground="White" 
+                        Click="Settings_Click"/> </StackPanel>
         </Border>
 
-        <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
-            <ListBox ItemsSource="{Binding Instances}" 
-                     SelectedItem="{Binding SelectedInstance}"
-                     Background="Transparent" BorderThickness="0">
-                <ListBox.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <WrapPanel Margin="10"/>
-                    </ItemsPanelTemplate>
-                </ListBox.ItemsPanel>
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel Margin="10" Width="120">
-                            <Border Background="#333" Height="100" CornerRadius="5">
-                                <TextBlock Text="SUS" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.3"/>
-                            </Border>
-                            <TextBlock Text="{Binding Name}" HorizontalAlignment="Center" Margin="0,5,0,0" FontWeight="Bold"/>
-                            <TextBlock Text="{Binding Version}" HorizontalAlignment="Center" FontSize="10" Foreground="Gray"/>
-                        </StackPanel>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
-        </ScrollViewer>
+        <ListBox Grid.Column="1" ItemsSource="{Binding Instances}" 
+                 SelectedItem="{Binding SelectedInstance, Mode=TwoWay}"
+                 Background="Transparent" BorderThickness="0">
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel Margin="10"/>
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Margin="10" Width="120">
+                        <Border Background="#444" Height="100" CornerRadius="8">
+                            <TextBlock Text="SUS" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.5"/>
+                        </Border>
+                        <TextBlock Text="{Binding Name}" HorizontalAlignment="Center" Margin="0,5,0,0" FontWeight="Bold"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
     </Grid>
 </Window>

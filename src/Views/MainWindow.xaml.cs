@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Input;
 using SUSCRAFT.ViewModels;
+using SUSCRAFT.Models;
 
 namespace SUSCRAFT.Views
 {
@@ -16,10 +17,25 @@ namespace SUSCRAFT.Views
 
         private async void PlayButton_Click(object sender, RoutedEventArgs e)
         {
-            if (this.DataContext is MainViewModel vm)
+            if (DataContext is MainViewModel vm)
             {
                 await vm.LaunchSelected();
             }
+        }
+
+        private void AddInstance_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is MainViewModel vm)
+            {
+                vm.Instances.Add(new MinecraftInstance { Name = "New Sus Instance", Version = "1.20.1" });
+            }
+        }
+
+        private void Settings_Click(object sender, RoutedEventArgs e)
+        {
+            var settings = new SettingsWindow();
+            settings.Owner = this;
+            settings.ShowDialog();
         }
 
         private void Logo_MouseDown(object sender, MouseButtonEventArgs e)
@@ -28,8 +44,7 @@ namespace SUSCRAFT.Views
             if (_clickCount >= 10)
             {
                 _clickCount = 0;
-                var egg = new EasterEggWindow();
-                egg.ShowDialog();
+                new EasterEggWindow().ShowDialog();
             }
         }
     }
