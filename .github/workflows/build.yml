@@ -1,0 +1,62 @@
+name: SUSCRAFT Auto-Release
+on: 
+  push:
+    branches:
+      - main  # Only release when pushing to main
+    tags:
+      - 'v*' # Or when you push a tag like v1.0.0
+
+jobs:
+  build:
+    runs-on: windows-latest
+    permissions:
+      contents: write # Required to create a release
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore & Build
+        run: dotnet build src/SUSCRAFT.csproj -c Release
+
+      - name: Prepare Release Bundle
+        shell: pwsh
+        run: |
+          # Create a clean release directory
+          New-Item -ItemType Directory -Force -Path "Release-Bundle"
+          
+          # Copy the compiled binaries
+          Copy-Item -Path "src/bin/Release/net8.0-windows/*" -Destination "Release-Bundle" -Recurforce
+          
+          # Create the Prism-style folder structure inside the zip
+          New-Item -ItemType Directory -Force -Path "Release-Bundle/AppData/instances"
+          New-Item -ItemType Directory -Force -Path "Release-Bundle/SUSCRAFT-LAUNCHER"
+          
+          # Compress everything into a single ZIP file
+          Compress-Archive -Path "Release-Bundle/*" -DestinationPath "SUSCRAFT-Windows-Alpha.zip"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: rolling-build-${{ github.run_number }}
+          name: SUSCRAFT Build #${{ github.run_number }}
+          draft: false
+          prerelease: true
+          files: SUSCRAFT-Windows-Alpha.zip
+          body: |
+            ### 🛠️ SUSCRAFT Launcher Build
+            Automated build for version tracking.
+            
+            **Changes in this build:**
+            - Real Prism-style instance isolation.
+            - Microsoft & Offline Auth logic.
+            - Automated directory structure: `SUSCRAFT-LAUNCHER` and `AppData/instances`.
+            
+            *Secured by LSO Taran Taran.*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,31 +1,31 @@
 using System;
 using System.IO;
-using SUSCRAFT.Models;
+using System.Threading.Tasks;
 
-namespace SUSCRAFT.Services
+namespace Suscraft.Services
 {
     public class InstanceService
     {
-        private readonly string _basePath;
+        private readonly string _instancesRoot;
 
-        public InstanceService(string basePath)
+        public InstanceService()
         {
-            _basePath = basePath;
-            if (!Directory.Exists(_basePath))
-                Directory.CreateDirectory(_basePath);
+            _instancesRoot = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "AppData", "instances");
+            if (!Directory.Exists(_instancesRoot)) Directory.CreateDirectory(_instancesRoot);
         }
 
-        public void CreateInstance(string name, string version)
+        public string CreateInstanceFolder(string instanceName)
         {
-            string instancePath = Path.Combine(_basePath, name, ".minecraft");
-            
-            // Create the isolated folder structure
-            Directory.CreateDirectory(instancePath);
-            Directory.CreateDirectory(Path.Combine(instancePath, "mods"));
-            Directory.CreateDirectory(Path.Combine(instancePath, "resourcepacks"));
-            Directory.CreateDirectory(Path.Combine(instancePath, "saves"));
-
-            // Note: In Part 23, we will save the instance.json here
+            // Create a dedicated folder for this specific instance (The Prism Way)
+            string instancePath = Path.Combine(_instancesRoot, instanceName);
+            if (!Directory.Exists(instancePath))
+            {
+                Directory.CreateDirectory(instancePath);
+                // Create the .minecraft sub-folders for world/assets isolation
+                Directory.CreateDirectory(Path.Combine(instancePath, "saves"));
+                Directory.CreateDirectory(Path.Combine(instancePath, "screenshots"));
+            }
+            return instancePath;
         }
     }
 }
