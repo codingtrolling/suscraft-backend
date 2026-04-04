@@ -1,37 +1,30 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
-using SUSCRAFT.Models;
-using SUSCRAFT.Core;
+using Suscraft.Services;
+using Suscraft.Models;
+using CmlLib.Core.Auth;
 
-namespace SUSCRAFT.ViewModels
+namespace Suscraft.ViewModels
 {
     public class MainViewModel
     {
-        public ObservableCollection<MinecraftInstance> Instances { get; set; }
-        public MinecraftInstance SelectedInstance { get; set; }
-        private LaunchController _launchController;
+        private readonly LauncherService _launcher = new();
+        private readonly AuthService _auth = new();
+        private readonly InstanceService _instanceManager = new();
 
-        public MainViewModel()
+        public ObservableCollection<string> LocalInstances { get; set; } = new();
+
+        public async Task LaunchGame(string selectedVersion)
         {
-            Instances = new ObservableCollection<MinecraftInstance>();
-            _launchController = new LaunchController();
-            Instances.Add(new MinecraftInstance { Name = "Main Survival", Version = "1.20.1" });
-        }
+            // The Prism Way: Create an isolated folder
+            string instanceName = $"Instance-{selectedVersion}";
+            string path = _instanceManager.CreateInstanceFolder(instanceName);
 
-        public async Task LaunchSelected()
-        {
-            if (SelectedInstance == null) {
-                SusNotification.Show("Select an instance first, you absolute troll.");
-                return;
-            }
+            // Using Offline for your current slow internet testing
+            var session = _auth.LoginOffline("Player");
 
-            // Trigger the Sus Moment
-            SusNotification.TriggerRizz();
-
-            // Actual launch logic
-            var session = CmlLib.Core.Auth.MSession.GetOfflineSession("SusPlayer");
-            await _launchController.StartGame(session, SelectedInstance.Version, 2048);
+            await _launcher.LaunchIsolated(selectedVersion, path, session);
         }
     }
 }

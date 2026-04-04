@@ -1,51 +1,29 @@
 using System.Windows;
-using System.Windows.Input;
-using SUSCRAFT.ViewModels;
-using SUSCRAFT.Models;
+using Suscraft.ViewModels;
 
-namespace SUSCRAFT.Views
+namespace Suscraft.Views
 {
     public partial class MainWindow : Window
     {
-        private int _clickCount = 0;
+        private readonly MainViewModel _viewModel = new();
 
         public MainWindow()
         {
             InitializeComponent();
-            this.DataContext = new MainViewModel();
+            DataContext = _viewModel;
         }
 
-        private async void PlayButton_Click(object sender, RoutedEventArgs e)
+        private async void OnPlayClicked(object sender, RoutedEventArgs e)
         {
-            if (DataContext is MainViewModel vm)
+            string version = VersionSelector.Text;
+            if (string.IsNullOrEmpty(version) || version == "Select Version...")
             {
-                await vm.LaunchSelected();
+                MessageBox.Show("Please select or type a version first!", "LSO Taran Taran Security");
+                return;
             }
-        }
 
-        private void AddInstance_Click(object sender, RoutedEventArgs e)
-        {
-            if (DataContext is MainViewModel vm)
-            {
-                vm.Instances.Add(new MinecraftInstance { Name = "New Sus Instance", Version = "1.20.1" });
-            }
-        }
-
-        private void Settings_Click(object sender, RoutedEventArgs e)
-        {
-            var settings = new SettingsWindow();
-            settings.Owner = this;
-            settings.ShowDialog();
-        }
-
-        private void Logo_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            _clickCount++;
-            if (_clickCount >= 10)
-            {
-                _clickCount = 0;
-                new EasterEggWindow().ShowDialog();
-            }
+            // Trigger the launch logic
+            await _viewModel.LaunchGame(version);
         }
     }
 }
