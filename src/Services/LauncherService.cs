@@ -1,8 +1,10 @@
 using System;
 using System.IO;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using CmlLib.Core;
 using CmlLib.Core.Auth;
+using CmlLib.Core.Process;
 
 namespace Suscraft.Services
 {
@@ -12,7 +14,6 @@ namespace Suscraft.Services
 
         public LauncherService()
         {
-            // Global storage for JARs and Assets (to save bandwidth)
             _commonStorage = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SUSCRAFT-LAUNCHER");
         }
 
@@ -25,16 +26,14 @@ namespace Suscraft.Services
             {
                 Session = session,
                 MaximumRamMb = 2048,
-                
-                // THE PRISM FINISH: 
-                // All worlds and logs go to the Instance folder, NOT the global folder.
                 GameLauncherName = "SUSCRAFT",
-                CustomJavaArgs = new string[] { $"-Djava.library.path={instancePath}" },
-                Path = new MinecraftPath(instancePath) 
+                // Correct way to set the instance directory in 3.3.7
+                Path = new MinecraftPath(instancePath)
             };
 
-            // This downloads only missing global files to _commonStorage
-            // but runs the game using instancePath as the root.
+            // Using JVMArguments for any extra flags
+            launchOption.JVMArguments = new string[] { $"-Djava.library.path={Path.Combine(instancePath, "natives")}" };
+
             var process = await launcher.CreateProcessAsync(version, launchOption);
             process.Start();
         }

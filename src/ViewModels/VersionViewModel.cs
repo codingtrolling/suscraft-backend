@@ -14,18 +14,16 @@ namespace Suscraft.ViewModels
         {
             try 
             {
-                // Fetch the version list (This is a small JSON download)
                 var versions = await launcher.GetAllVersionsAsync();
                 foreach (var v in versions)
                 {
-                    // Only show Releases to keep the UI clean (Prism Style)
                     if (v.MType == MVersionType.Release)
                         AvailableVersions.Add(v.Name);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                // If internet is too slow/down, we show a fallback
+                // Catching without variable to avoid warnings
                 AvailableVersions.Add("Offline: 1.21.1");
             }
         }
