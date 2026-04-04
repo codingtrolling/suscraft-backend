@@ -5,6 +5,8 @@
     <UseWPF>true</UseWPF>
     <AssemblyName>SUSCRAFT</AssemblyName>
     <RootNamespace>Suscraft</RootNamespace>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

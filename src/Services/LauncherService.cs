@@ -1,10 +1,8 @@
 using System;
 using System.IO;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using CmlLib.Core;
 using CmlLib.Core.Auth;
-using CmlLib.Core.Process;
 
 namespace Suscraft.Services
 {
@@ -15,6 +13,7 @@ namespace Suscraft.Services
         public LauncherService()
         {
             _commonStorage = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SUSCRAFT-LAUNCHER");
+            if (!Directory.Exists(_commonStorage)) Directory.CreateDirectory(_commonStorage);
         }
 
         public async Task LaunchIsolated(string version, string instancePath, MSession session)
@@ -22,19 +21,21 @@ namespace Suscraft.Services
             var path = new MinecraftPath(_commonStorage);
             var launcher = new CMLauncher(path);
 
+            // In 3.3.7, we set the GameDirectory inside MLaunchOption
             var launchOption = new MLaunchOption
             {
                 Session = session,
                 MaximumRamMb = 2048,
-                GameLauncherName = "SUSCRAFT",
-                // Correct way to set the instance directory in 3.3.7
-                Path = new MinecraftPath(instancePath)
+                GameLauncherName = "SUSCRAFT"
             };
 
-            // Using JVMArguments for any extra flags
-            launchOption.JVMArguments = new string[] { $"-Djava.library.path={Path.Combine(instancePath, "natives")}" };
-
+            // Use the provided instancePath for the actual game files
             var process = await launcher.CreateProcessAsync(version, launchOption);
+            
+            // To ensure the game uses the isolated folder, we manually set the WorkingDirectory
+            process.StartInfo.WorkingDirectory = instancePath;
+            if (!Directory.Exists(instancePath)) Directory.CreateDirectory(instancePath);
+
             process.Start();
         }
     }
